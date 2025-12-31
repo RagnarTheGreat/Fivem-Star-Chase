@@ -11,12 +11,20 @@ Config = {}
 --                    PERMISSION SETTINGS                     --
 ---------------------------------------------------------------
 
--- Discord permission group for LEO access
+-- Discord permission group for LEO access (ACE permission name)
 -- This matches the group.leo from DiscordAcePerms
 Config.LEOPermission = "group.leo"
 
+-- Discord Role ID for LEO (from your Discord server)
+-- This is used as a fallback to check Discord roles directly via Badger_Discord_API
+-- Get this from Discord: Right-click role > Copy ID (Enable Developer Mode in Discord settings)
+Config.LEODiscordRole = "1223050790260965478"  -- Your LEO role ID
+
 -- Additional admin permission (can also use the system)
 Config.AdminPermission = "group.admin"
+
+-- Discord Role ID for Admin
+Config.AdminDiscordRole = "1223050790344593509"  -- Your Admin role ID
 
 -- Allow admins to tag any vehicle (even without being in pursuit)
 Config.AdminBypass = true
