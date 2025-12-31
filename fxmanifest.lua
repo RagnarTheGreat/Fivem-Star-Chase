@@ -16,9 +16,15 @@ game 'gta5'
 name 'starchase'
 author 'Rising RP'
 description 'GPS Pursuit Dart System - LEO Only'
-version '1.0.0'
+version '1.0.1'
 
 lua54 'yes'
+
+-- Dependencies - ensure these load before starchase
+dependencies {
+    'Badger_Discord_API',
+    'DiscordAcePerms'
+}
 
 shared_scripts {
     'config.lua'
