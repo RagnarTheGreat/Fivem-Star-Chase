@@ -81,7 +81,7 @@ Perfect for:
 
 1. **Download** the latest release
    ```bash
-   git clone [https://github.com/yourusername/starchase](https://github.com/RagnarTheGreat/Fivem-Star-Chase).git
+   git clone https://github.com/RagnarTheGreat/Fivem-Star-Chase
    ```
 
 2. **Extract** to your resources folder
