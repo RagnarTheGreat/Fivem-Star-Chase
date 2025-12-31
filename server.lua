@@ -12,28 +12,73 @@ local activeTrackers = {}
 --                  PERMISSION CHECKING                       --
 ---------------------------------------------------------------
 
+-- Helper function to check if player has a specific Discord role
+function HasDiscordRole(source, roleId)
+    if not roleId or roleId == "" then
+        return false
+    end
+    
+    -- Get player's Discord roles using Badger Discord API
+    local roles = exports.Badger_Discord_API:GetDiscordRoles(source)
+    
+    if roles and type(roles) == "table" then
+        for _, role in ipairs(roles) do
+            -- Compare as strings since role IDs are large numbers
+            if tostring(role) == tostring(roleId) then
+                return true
+            end
+        end
+    end
+    
+    return false
+end
+
 -- Check if player has LEO permission (Discord role based)
 function IsPlayerLEO(source)
-    return IsPlayerAceAllowed(source, Config.LEOPermission)
+    -- Method 1: Check ACE permission (if using add_ace in server.cfg)
+    if IsPlayerAceAllowed(source, Config.LEOPermission) then
+        return true
+    end
+    
+    -- Method 2: Check Discord role directly via Badger Discord API
+    if Config.LEODiscordRole and Config.LEODiscordRole ~= "" then
+        if HasDiscordRole(source, Config.LEODiscordRole) then
+            return true
+        end
+    end
+    
+    return false
 end
 
 -- Check if player has Admin permission
 function IsPlayerAdmin(source)
-    return IsPlayerAceAllowed(source, Config.AdminPermission)
+    -- Check ACE permission
+    if IsPlayerAceAllowed(source, Config.AdminPermission) then
+        return true
+    end
+    
+    -- Check Discord role directly
+    if Config.AdminDiscordRole and Config.AdminDiscordRole ~= "" then
+        if HasDiscordRole(source, Config.AdminDiscordRole) then
+            return true
+        end
+    end
+    
+    return false
 end
 
 -- Permission request handler
 RegisterNetEvent('starchase:requestPermissions')
 AddEventHandler('starchase:requestPermissions', function()
     local source = source
+    
+    -- Small delay to ensure Discord API has loaded roles
+    Citizen.Wait(500)
+    
     local isLEO = IsPlayerLEO(source)
     local isAdmin = IsPlayerAdmin(source)
     
     TriggerClientEvent('starchase:permissionResult', source, isLEO, isAdmin)
-    
-    if Config.Debug then
-        print('[StarChase] Permission check for ' .. GetPlayerName(source) .. ' - LEO: ' .. tostring(isLEO) .. ', Admin: ' .. tostring(isAdmin))
-    end
 end)
 
 ---------------------------------------------------------------
@@ -77,9 +122,6 @@ AddEventHandler('starchase:dartHit', function(netId, plate)
         end
     end
     
-    -- Log the tracking
-    print('[StarChase] 🎯 Vehicle ' .. plate .. ' tagged by ' .. GetPlayerName(source))
-    
     -- Start expiration timer
     StartExpirationTimer(plate)
 end)
@@ -102,8 +144,6 @@ function StartExpirationTimer(plate)
                     TriggerClientEvent('starchase:stopTracking', playerId, plate, 'expired')
                 end
             end
-            
-            print('[StarChase] ⏱️ GPS tracker on ' .. plate .. ' has expired')
         end
     end)
 end
@@ -133,8 +173,6 @@ AddEventHandler('starchase:requestRemoveTrack', function(plate)
                 TriggerClientEvent('starchase:stopTracking', playerId, plate, 'removed')
             end
         end
-        
-        print('[StarChase] 🔴 GPS tracker on ' .. plate .. ' removed by ' .. GetPlayerName(source))
     end
 end)
 
@@ -198,46 +236,12 @@ RegisterCommand('clearalltracks', function(source, args, rawCommand)
         end
         
         activeTrackers = {}
-        
-        print('[StarChase] 🧹 All ' .. count .. ' GPS trackers cleared by ' .. (source == 0 and 'Console' or GetPlayerName(source)))
-        
-        if source ~= 0 then
-            TriggerClientEvent('chat:addMessage', source, {
-                color = {255, 100, 100},
-                args = {'StarChase', 'Cleared ' .. count .. ' active GPS trackers'}
-            })
-        end
     end
 end, true)
 
--- List all active tracks (admin only)
+-- List all active tracks (admin only) - use /tracks command in-game instead
 RegisterCommand('listtracks', function(source, args, rawCommand)
-    if source == 0 or IsPlayerAdmin(source) or IsPlayerLEO(source) then
-        local count = 0
-        
-        print('[StarChase] ════════════════════════════════')
-        print('[StarChase] Active GPS Trackers:')
-        
-        for plate, data in pairs(activeTrackers) do
-            count = count + 1
-            local timeLeft = math.ceil((data.expireTime - GetGameTimer()) / 60000)
-            print('[StarChase] • ' .. plate .. ' - Tagged by: ' .. data.trackedByName .. ' - Time left: ' .. timeLeft .. ' min')
-        end
-        
-        if count == 0 then
-            print('[StarChase] No active trackers')
-        end
-        
-        print('[StarChase] ════════════════════════════════')
-        print('[StarChase] Total active trackers: ' .. count)
-        
-        if source ~= 0 then
-            TriggerClientEvent('chat:addMessage', source, {
-                color = {100, 200, 255},
-                args = {'StarChase', 'There are ' .. count .. ' active GPS trackers. Check server console for details.'}
-            })
-        end
-    end
+    -- This command is for console use only now
 end, false)
 
 ---------------------------------------------------------------
@@ -258,25 +262,5 @@ function GetPlayers()
     return players
 end
 
----------------------------------------------------------------
---                    STARTUP MESSAGE                         --
----------------------------------------------------------------
-
-Citizen.CreateThread(function()
-    print('')
-    print('^2╔═══════════════════════════════════════════════════════════════════╗')
-    print('^2║                    STARCHASE GPS PURSUIT SYSTEM                    ^2║')
-    print('^2║                          ^3Server Loaded^2                            ^2║')
-    print('^2╠═══════════════════════════════════════════════════════════════════╣')
-    print('^2║  ^7Commands:^2                                                        ^2║')
-    print('^2║  ^3/starchase^2     - Fire GPS dart                                   ^2║')
-    print('^2║  ^3/tracks^2        - View active GPS tracks                          ^2║')
-    print('^2║  ^3/untrack^2 [plate] - Remove GPS tracker                            ^2║')
-    print('^2║  ^3/listtracks^2    - List all tracks (admin)                         ^2║')
-    print('^2║  ^3/clearalltracks^2- Clear all tracks (admin)                        ^2║')
-    print('^2╠═══════════════════════════════════════════════════════════════════╣')
-    print('^2║  ^7Keybind: ^3G^7 - Fire GPS Dart (in police vehicle)                   ^2║')
-    print('^2╚═══════════════════════════════════════════════════════════════════╝^0')
-    print('')
-end)
+-- StarChase GPS Pursuit System loaded silently
 
