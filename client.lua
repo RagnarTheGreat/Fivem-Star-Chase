@@ -19,8 +19,14 @@ local trackingThreadActive = false
 
 -- Check permissions on resource start
 Citizen.CreateThread(function()
-    Wait(2000) -- Wait for other resources to load
+    Wait(3000) -- Wait for other resources to load (Discord API needs time)
     TriggerServerEvent('starchase:requestPermissions')
+    
+    -- Re-check permissions periodically (every 30 seconds)
+    while true do
+        Wait(30000)
+        TriggerServerEvent('starchase:requestPermissions')
+    end
 end)
 
 -- Receive permission status from server
@@ -28,11 +34,12 @@ RegisterNetEvent('starchase:permissionResult')
 AddEventHandler('starchase:permissionResult', function(leo, admin)
     isLEO = leo
     isAdmin = admin
-    
-    if Config.Debug then
-        print('[StarChase] Permission check - LEO: ' .. tostring(leo) .. ', Admin: ' .. tostring(admin))
-    end
 end)
+
+-- Manual permission refresh command
+RegisterCommand('refreshstarchase', function()
+    TriggerServerEvent('starchase:requestPermissions')
+end, false)
 
 ---------------------------------------------------------------
 --                    NOTIFICATION SYSTEM                     --
@@ -498,11 +505,4 @@ end)
 RegisterNUICallback('hideNotification', function(data, cb)
     cb('ok')
 end)
-
--- Debug print on resource start
-if Config.Debug then
-    Citizen.CreateThread(function()
-        print('[StarChase] Client script loaded successfully')
-    end)
-end
 
