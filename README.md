@@ -64,7 +64,7 @@ Perfect for:
 
 | GPS Dart Fired | Tracking Active | Notifications |
 |:--------------:|:---------------:|:-------------:|
-| ![Dart](https://via.placeholder.com/250x150/1a1a2e/00ff88?text=🎯+Dart+Fired) | ![Track](https://via.placeholder.com/250x150/1a1a2e/00d4ff?text=📡+Tracking) | ![Notify](https://via.placeholder.com/250x150/1a1a2e/ff4757?text=🔔+Alert) |
+| ![Dart](https://via.placeholder.com/250x150/1a1a2e/00ff88?text=🎯+Dart+Fired) | ![Track](https://share.serenity-hosting.com/img/f09815b4410f1c23.jpg) | ![Notify](https://via.placeholder.com/250x150/1a1a2e/ff4757?text=🔔+Alert) |
 
 </div>
 
