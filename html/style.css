@@ -22,13 +22,14 @@ body {
 
 #notification-container {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     gap: 12px;
     z-index: 9999;
-    max-width: 340px;
+    max-width: 420px;
     pointer-events: none;
 }
 
@@ -40,10 +41,10 @@ body {
     background: transparent;
     border-radius: 8px;
     padding: 0;
-    min-width: 280px;
-    max-width: 340px;
+    min-width: 350px;
+    max-width: 420px;
     overflow: visible;
-    transform: translateX(120%);
+    transform: translateY(120%);
     opacity: 0;
     animation: slideIn 0.4s ease-out forwards;
     position: relative;
@@ -60,8 +61,8 @@ body {
 .notification-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
+    gap: 14px;
+    padding: 14px 18px;
     position: relative;
     background: rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(8px);
@@ -70,13 +71,13 @@ body {
 }
 
 .notification-icon {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 22px;
     position: relative;
     background: rgba(0, 0, 0, 0.3);
 }
@@ -87,20 +88,20 @@ body {
 
 .notification-badge {
     font-family: 'Orbitron', sans-serif;
-    font-size: 8px;
+    font-size: 9px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    padding: 2px 6px;
+    padding: 3px 8px;
     border-radius: 3px;
     display: inline-block;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
     background: rgba(0, 0, 0, 0.3);
 }
 
 .notification-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.5px;
     text-transform: uppercase;
@@ -112,7 +113,7 @@ body {
    ═══════════════════════════════════════════════════════════════════ */
 
 .notification-body {
-    padding: 10px 14px;
+    padding: 14px 18px;
     position: relative;
     background: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(8px);
@@ -121,7 +122,7 @@ body {
 }
 
 .notification-message {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     line-height: 1.4;
     color: rgba(255, 255, 255, 0.9);
@@ -285,22 +286,22 @@ body {
 
 @keyframes slideIn {
     0% {
-        transform: translateX(50px);
+        transform: translateY(50px);
         opacity: 0;
     }
     100% {
-        transform: translateX(0);
+        transform: translateY(0);
         opacity: 1;
     }
 }
 
 @keyframes slideOut {
     0% {
-        transform: translateX(0);
+        transform: translateY(0);
         opacity: 1;
     }
     100% {
-        transform: translateX(50px);
+        transform: translateY(50px);
         opacity: 0;
     }
 }
@@ -358,10 +359,11 @@ body {
    RESPONSIVE ADJUSTMENTS
    ═══════════════════════════════════════════════════════════════════ */
 
-@media (max-width: 420px) {
+@media (max-width: 480px) {
     #notification-container {
-        right: 10px;
         left: 10px;
+        right: 10px;
+        transform: translateX(0);
         max-width: none;
     }
     
