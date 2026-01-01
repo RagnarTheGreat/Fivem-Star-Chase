@@ -7,6 +7,8 @@
 
 -- Active GPS tracks storage
 local activeTrackers = {}
+-- Track which players have been synced (to prevent duplicate notifications)
+local syncedPlayers = {}
 
 ---------------------------------------------------------------
 --                  PERMISSION CHECKING                       --
@@ -180,9 +182,10 @@ end)
 --              NEW PLAYER SYNC                               --
 ---------------------------------------------------------------
 
--- When a new player joins, send them all active tracks
-AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
-    -- Handled in separate event
+-- Clean up when player disconnects
+AddEventHandler('playerDropped', function(reason)
+    local source = source
+    syncedPlayers[source] = nil
 end)
 
 -- Sync active tracks to newly joined LEO players
@@ -200,19 +203,29 @@ AddEventHandler('starchase:requestActiveTrackers', function()
     end
 end)
 
--- Also trigger sync when permissions are requested
+-- Sync active trackers to new LEO players (only once per player)
 RegisterNetEvent('starchase:requestPermissions')
 AddEventHandler('starchase:requestPermissions', function()
     local source = source
     
-    -- Delayed sync to ensure permissions are processed first
-    Citizen.SetTimeout(1000, function()
-        if IsPlayerLEO(source) or (Config.AdminBypass and IsPlayerAdmin(source)) then
-            for plate, data in pairs(activeTrackers) do
-                TriggerClientEvent('starchase:startTracking', source, data.netId, plate, data.expireTime)
+    -- Only sync if player hasn't been synced yet and has LEO permissions
+    if not syncedPlayers[source] then
+        -- Delayed sync to ensure permissions are processed first
+        Citizen.SetTimeout(1500, function()
+            -- Check if player still exists (in case they disconnected)
+            if GetPlayerName(source) then
+                if IsPlayerLEO(source) or (Config.AdminBypass and IsPlayerAdmin(source)) then
+                    -- Mark player as synced
+                    syncedPlayers[source] = true
+                    
+                    -- Send all active trackers
+                    for plate, data in pairs(activeTrackers) do
+                        TriggerClientEvent('starchase:startTracking', source, data.netId, plate, data.expireTime)
+                    end
+                end
             end
-        end
-    end)
+        end)
+    end
 end)
 
 ---------------------------------------------------------------
