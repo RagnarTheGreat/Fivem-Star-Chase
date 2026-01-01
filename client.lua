@@ -250,6 +250,9 @@ AddEventHandler('starchase:startTracking', function(netId, plate, expireTime)
     local vehicle = NetworkGetEntityFromNetworkId(netId)
     
     if vehicle and vehicle ~= 0 and DoesEntityExist(vehicle) then
+        -- Check if already tracking this vehicle
+        local isNewTrack = not trackedVehicles[plate]
+        
         -- Store tracked vehicle
         trackedVehicles[plate] = {
             netId = netId,
@@ -257,7 +260,7 @@ AddEventHandler('starchase:startTracking', function(netId, plate, expireTime)
             vehicle = vehicle
         }
         
-        -- Create blip
+        -- Create or update blip
         CreateTrackingBlip(plate, vehicle)
         
         -- Start tracking thread if not already running
@@ -265,7 +268,10 @@ AddEventHandler('starchase:startTracking', function(netId, plate, expireTime)
             StartTrackingThread()
         end
         
-        SendNotification('info', '📡 NEW GPS TRACK', 'Vehicle ' .. plate .. ' is now being tracked\n' .. string.format(Config.Messages.TrackingTime, Config.TrackerDuration))
+        -- Only send notification for new tracks
+        if isNewTrack then
+            SendNotification('info', '📡 NEW GPS TRACK', 'Vehicle ' .. plate .. ' is now being tracked\n' .. string.format(Config.Messages.TrackingTime, Config.TrackerDuration))
+        end
     end
 end)
 
@@ -290,8 +296,8 @@ function CreateTrackingBlip(plate, vehicle)
         RemoveBlip(trackedBlips[plate])
     end
     
-    local coords = GetEntityCoords(vehicle)
-    local blip = AddBlipForCoord(coords.x, coords.y, coords.z)
+    -- Use AddBlipForEntity instead of AddBlipForCoord so it automatically follows the vehicle
+    local blip = AddBlipForEntity(vehicle)
     
     -- Configure blip appearance
     SetBlipSprite(blip, Config.BlipSprite)
@@ -349,10 +355,8 @@ function StartTrackingThread()
                 if vehicle and vehicle ~= 0 and DoesEntityExist(vehicle) then
                     local coords = GetEntityCoords(vehicle)
                     
-                    -- Update blip position
-                    if trackedBlips[plate] and DoesBlipExist(trackedBlips[plate]) then
-                        SetBlipCoords(trackedBlips[plate], coords.x, coords.y, coords.z)
-                    else
+                    -- Check if blip exists, recreate if lost (AddBlipForEntity automatically follows, no need to update coordinates)
+                    if not trackedBlips[plate] or not DoesBlipExist(trackedBlips[plate]) then
                         -- Recreate blip if it was lost
                         CreateTrackingBlip(plate, vehicle)
                     end
