@@ -15,7 +15,7 @@ game 'gta5'
 
 name 'starchase'
 author 'Rising RP'
-description 'GPS Pursuit Dart System - LEO Only'
+description 'GPS Pursuit Dart System'
 version '1.0.1'
 
 lua54 'yes'
