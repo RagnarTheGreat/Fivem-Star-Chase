@@ -72,9 +72,29 @@ Citizen.CreateThread(function()
         if not isLEO and not (Config.AdminBypass and isAdmin) then
             Wait(1000)
         else
-            -- Check if fire key is pressed
-            if IsControlJustPressed(0, Config.FireKey) then
-                AttemptFireDart()
+            local ped = PlayerPedId()
+            -- Only check for fire key if player is in an emergency vehicle
+            if IsPedInAnyVehicle(ped, false) then
+                local vehicle = GetVehiclePedIsIn(ped, false)
+                local vehicleClass = GetVehicleClass(vehicle)
+                local isEmergencyVehicle = false
+                
+                -- Check if vehicle is an emergency vehicle (class 18)
+                if vehicleClass == 18 then
+                    isEmergencyVehicle = true
+                end
+                
+                -- Only check for fire key if in emergency vehicle
+                if isEmergencyVehicle then
+                    -- Check if fire key is pressed
+                    if IsControlJustPressed(0, Config.FireKey) then
+                        AttemptFireDart()
+                    end
+                else
+                    Wait(500) -- Wait longer when not in emergency vehicle to save resources
+                end
+            else
+                Wait(500) -- Wait longer when not in vehicle to save resources
             end
         end
     end
